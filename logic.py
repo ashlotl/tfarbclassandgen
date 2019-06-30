@@ -9,7 +9,7 @@ file=open("script","r")
 wf=file.read()#the whole script
 wordSize=10#characters, which are flattened to "binary" (or 0.0v1.0) 128-length arrays
 quoteSize=10#words
-numQuotes=2#int(len(wf)/(wordSize*quoteSize))#pretty obvious
+numQuotes=3#int(len(wf)/(wordSize*quoteSize))#pretty obvious
 flattened=np.zeros(numQuotes*wordSize*quoteSize*128).reshape(numQuotes,wordSize*quoteSize*128)
 for quote in range(0,numQuotes):
     iterator=0
@@ -27,13 +27,31 @@ def fact(num):
     if num!=1:
         return num*fact(num-1)
 #define a (non-Expanse) spacing function that ensures each datapoint is arbitrarily as far from the other as possible.
+def check((ye,ype)):
+    if ye!=ype:
+        return (1, 1)
+    return (0,0)
+
 def invdistp(y,y_pred):
     # print(y,y_pred)
     # total=tf.Variable(initial_value=tf.constant(.1),trainable=False)
-    tf.print("SHAPE:",y.shape,y_pred.shape)
-    total=tf.math.square(tf.math.subtract(y,y_pred))
-    tf.print("HERE:",total)
-    return tf.math.reciprocal(tf.constant(1.0))
+    if tf.map_fn(check,(y,y_pred))==(0,0):
+        return 0
+    # bad=True
+    # i=0
+    #
+    # for e in y:
+    #     if y[i]!=y_pred[i]:
+    #         bad=False
+    #         break
+    #     i+=1
+    # if bad:
+    #     return 0
+    print("SHAPE:",y.shape,y_pred.shape)
+    lamb=lambda val : val
+    total=tf.map_fn(lamb,tf.square(tf.subtract(y,y_pred)))*1000
+    print("HERE:",total)
+    return tf.math.reciprocal(tf.reduce_sum(total))
 # invdist=tf.contrib.eager.function(invdistp)
 #define an arbitrary classifier
 print("Initializing classifier")
