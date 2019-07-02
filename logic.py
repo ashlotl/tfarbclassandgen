@@ -1,5 +1,7 @@
 from __future__ import print_function
 import tensorflow as tf,numpy as np,math,pygame
+from tensorflow.python import debug as tf_debug
+# tf.keras.backend.set_session(tf_debug.TensorBoardDebugWrapperSession(tf.Session(),'localhost:6064'))
 pygame.init()
 screen=pygame.display.set_mode((500,500))
 pygame.display.set_caption("Scary port v3084")
@@ -35,8 +37,8 @@ def check((ye,ype)):
 def invdistp(y,y_pred):
     # print(y,y_pred)
     # total=tf.Variable(initial_value=tf.constant(.1),trainable=False)
-    if tf.map_fn(check,(y,y_pred))==(0,0):
-        return 0
+    # if tf.map_fn(check,(y,y_pred))==(0,0):
+    #     return 0
     # bad=True
     # i=0
     #
@@ -49,9 +51,9 @@ def invdistp(y,y_pred):
     #     return 0
     print("SHAPE:",y.shape,y_pred.shape)
     lamb=lambda val : val
-    total=tf.map_fn(lamb,tf.square(tf.subtract(y,y_pred)))*1000
+    total=tf.map_fn(lamb,tf.square(tf.subtract(y,y_pred)))
     print("HERE:",total)
-    return tf.math.reciprocal(tf.reduce_sum(total))
+    return -tf.reduce_sum(total)
 # invdist=tf.contrib.eager.function(invdistp)
 #define an arbitrary classifier
 print("Initializing classifier")
