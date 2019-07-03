@@ -11,7 +11,7 @@ file=open("script","r")
 wf=file.read()#the whole script
 wordSize=10#characters, which are flattened to "binary" (or 0.0v1.0) 128-length arrays
 quoteSize=10#words
-numQuotes=3#int(len(wf)/(wordSize*quoteSize))#pretty obvious
+numQuotes=10#int(len(wf)/(wordSize*quoteSize))#pretty obvious
 flattened=np.zeros(numQuotes*wordSize*quoteSize*128).reshape(numQuotes,wordSize*quoteSize*128)
 for quote in range(0,numQuotes):
     iterator=0
@@ -51,9 +51,10 @@ def invdistp(y,y_pred):
     #     return 0
     print("SHAPE:",y.shape,y_pred.shape)
     lamb=lambda val : val
-    total=tf.map_fn(lamb,tf.square(tf.subtract(y,y_pred)))
+    total=tf.square(tf.subtract(tf.map_fn(lamb,tf.abs(tf.subtract(y,y_pred))),.5))
+    # total2=tf.map_fn(lamb, tf.square(tf.subtract(y_pred,0.5)))
     print("HERE:",total)
-    return -tf.reduce_sum(total)
+    return tf.reduce_sum(total)
 # invdist=tf.contrib.eager.function(invdistp)
 #define an arbitrary classifier
 print("Initializing classifier")
@@ -69,45 +70,19 @@ classifier.compile(optimizer='sgd',loss=invdistp)
 classifier.summary()
 print("Fitting")
 z=True
-for epoch in range(0,50):
+pygame.display.flip()
+for epoch in range(0,500):
     screen.fill((255,255,255))
     for valin in range(0,len(flattened)):
-        for valout in range(0,len(flattened)):
+        xs=np.zeros((1,int(quoteSize*wordSize*128)))
+        xs[0]=flattened[valin]
+        ys1=classifier.predict_on_batch(xs)
+        for valout in range(0,(len(flattened)+1)/2):
             if valin!=valout:
-                xs=np.zeros((1,int(quoteSize*wordSize*128)))
-                print(flattened.shape)
-                xs[0]=flattened[valin]
-                print(xs)
-                # predictor.set_weights(classifier.get_weights())
-                # if z:
-                #     ys=np.ones((1,int(.1*quoteSize*wordSize*128)))
-                # else:
-                #     ys=np.zeros((1,int(.1*quoteSize*wordSize*128)))
-                # z=not z
-                ys1=classifier.predict_on_batch(xs)
-                # classifier.trainable=True
                 xs2=np.empty((1,int(quoteSize*wordSize*128)))
                 xs2[0]=flattened[valout]
-                ys2=classifier.predict_on_batch(xs2)
-                ys=np.zeros((1,int(2)))
-                total=0
-                color=(0,0,0)
-                pygame.draw.circle(screen,color,(int(200*(ys2[0][0])),int(200*(ys2[0][1]))),2,0)
-                for index in range(0,len(ys2)):
-                    total+=(ys2[0][index]-ys1[0][index])**2
-                total=-(total)
-                if total==0:
-                    total=.0000001
-                for index in range(0,len(ys2[0])):
-                    ys[0][index]=ys2[0][index]+.00001*(ys2[0][index]-ys1[0][index])/total
-                    if ys[0][index]>1:
-                        ys[0][index]=1
-                    if ys[0][index]<0:
-                        ys[0][index]=0
-                print("fit...",xs2.shape,ys.shape)
-                # tf.reset_default_graph()
-                # classifier.compile(optimizer='sgd',loss=invdist,metrics=['accuracy'])
                 classifier.fit(xs2,ys1,epochs=1,batch_size=1)
+        pygame.draw.circle(screen,(0,0,0),(int(200*(ys1[0][0])),int(200*(ys1[0][1]))),2,0)
     pygame.display.flip()
 #custom loss that allows one prediction to be compared to many expecteds with a 'nearest' behaviour
 def lossf(y,y_pred):
