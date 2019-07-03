@@ -1,5 +1,5 @@
 from __future__ import print_function
-import tensorflow as tf,numpy as np,math
+import tensorflow as tf,numpy as np,math,random
 from tensorflow.python import debug as tf_debug
 # tf.keras.backend.set_session(tf_debug.TensorBoardDebugWrapperSession(tf.Session(),'localhost:6064'))
 sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
@@ -63,15 +63,15 @@ tf.keras.layers.Dense(int(.8*quoteSize*wordSize*128),activation='sigmoid'),
 tf.keras.layers.Dense(quoteSize*wordSize*128,activation='sigmoid')
 ])
 print("Compiling")
-generator.compile(optimizer='sgd',loss=lossf,metrics=['accuracy'])
+generator.compile(optimizer='sgd',loss='mean_squared_error',metrics=['accuracy'])
 print("Fitting")
 xseeds=np.zeros((len(flattened),numIn))
 for i in range(0,len(flattened)):
     for j in range(0,numIn):
-        xseeds[i][j]=math.random()
+        xseeds[i][j]=random.random()
 generator.fit(xseeds,classifierStatusQuo,epochs=100,steps_per_epoch=1,verbose=1)
 while True:
     xseed=np.zeros((1,numIn))
     for i in range(0,numIn):
-        xseed[0][i]=math.random()
+        xseed[0][i]=random.random()
     print(generator.predict(xseed))
