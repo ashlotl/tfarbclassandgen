@@ -39,7 +39,7 @@ classifier.summary()
 print("Fitting")
 xs=np.zeros((1,int(quoteSize*wordSize*128)))
 classifierStatusQuo=np.zeros((len(flattened),numOut))
-numEpochs=500
+numEpochs=100
 for epoch in range(0,numEpochs):
     for valin in range(0,len(flattened)):
         xs[0]=flattened[valin]
